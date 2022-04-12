@@ -1,0 +1,45 @@
+---
+title: "Nitrogen project (1)"
+author: "Patty Park"
+date: "4/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+
+```
+
+```{r}
+#importing data into R
+nitrogen_soil <- read_csv("nitrogen_soil.csv")
+nitrogen_soil2 <- rename(nitrogen_soil, 'nonnative' = 'Total Nonnative PC')
+nitrogen_soil2
+
+```
+
+```{r}
+#creating nitrate graph
+nitrate_graph <- ggplot(nitrogen_soil2, aes(x=Nitrate, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()
+nitrate_graph
+
+#make column graph? x axis is zone, y axis is nitrogen concentration (nitrate and ammonium)
+
+#+facet_wrap(~zone) this is for regression
+
+```
+
+```{r}
+#creating ammonium graph
+ammonium_graph <- ggplot(nitrogen_soil2, aes(x=Ammonium, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=FALSE)
+ammonium_graph
+```
+
+```{r}
+plot(x=nitrogen_soil2$Nitrate, y=nitrogen_soil2$nonnative, ,xlab="Nitrate concentration", yxlab="Total Nonnative PC", main="Nitrate and Nonnative PC")
+
+```
