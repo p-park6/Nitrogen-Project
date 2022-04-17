@@ -17,10 +17,17 @@ library(tidyverse)
 ```{r}
 #importing data into R
 nitrogen_soil <- read_csv("nitrogen_soil.csv")
+north_parcel <- read_csv("np_pc.csv")
+north_parcel
 nitrogen_soil2 <- rename(nitrogen_soil, 'nonnative' = 'Total Nonnative PC')
 nitrogen_soil2
+nitrogen_soil3 <- read_csv("Nitrogen_soil (2).csv")
+nitrogen_soil3 <- rename(nitrogen_soil3, 'nonnative'='Total Nonnative PC')
+nitrogen_soil3
 
 ```
+
+
 
 ```{r}
 #creating nitrate graph
@@ -31,12 +38,28 @@ nitrate_graph
 
 #+facet_wrap(~zone) this is for regression
 
+#start google slides (intro, methods,etc, conclusion)
+
 ```
 
 ```{r}
 #creating ammonium graph
 ammonium_graph <- ggplot(nitrogen_soil2, aes(x=Ammonium, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=FALSE)
 ammonium_graph
+```
+
+```{r}
+#Nitrate graph with separate zones
+nitrate_graph2 <- ggplot(nitrogen_soil3, aes(x=Nitrate, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + facet_wrap(~Zone)
+nitrate_graph2
+
+```
+
+``` {r}
+#ammonium graph with separate zones
+ammonium_graph2 <- ggplot(nitrogen_soil3, aes(x=Ammonium, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + facet_wrap(~Zone)
+ammonium_graph2
+
 ```
 
 ```{r}
