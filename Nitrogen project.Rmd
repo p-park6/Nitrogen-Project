@@ -31,7 +31,7 @@ nitrogen_soil3
 
 ```{r}
 #creating nitrate graph
-nitrate_graph <- ggplot(nitrogen_soil2, aes(x=Nitrate, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()
+nitrate_graph <- ggplot(nitrogen_soil2, aes(x=Nitrate, y=nonnative, )) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()
 nitrate_graph
 
 #make column graph? x axis is zone, y axis is nitrogen concentration (nitrate and ammonium)
