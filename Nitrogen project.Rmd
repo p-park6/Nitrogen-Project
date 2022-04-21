@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-
+library(ggpubr)
 ```
 
 ```{r}
@@ -21,17 +21,23 @@ north_parcel <- read_csv("np_pc.csv")
 north_parcel
 nitrogen_soil2 <- rename(nitrogen_soil, 'nonnative' = 'Total Nonnative PC')
 nitrogen_soil2
-nitrogen_soil3 <- read_csv("Nitrogen_soil (2).csv")
-nitrogen_soil3 <- rename(nitrogen_soil3, 'nonnative'='Total Nonnative PC')
-nitrogen_soil3
-
+nitrogen_soil4 <- read_csv("Nitrogen_soil (4).csv")
+nitrogen_soil4 <- rename(nitrogen_soil4, 'nonnative'='Total Nonnative PC')
+nitrogen_soil4 <- rename (nitrogen_soil4, 'A_N'= 'Ammonium+Nitrate (ug/g*dm)')
+nitrogen_soil4 <- rename (nitrogen_soil4, 'Ammonium'='Ammonium(ug/g*dm)')
+nitrogen_soil4 <- rename (nitrogen_soil4, 'Nitrate'='Nitrate (ug/g*dm)')
+nitrogen_soil4
+nitrogen_plant <- read_csv("Nitrogen_plant (5).csv")
+#nitrogen_plant <- rename(nitrogen_plant,'nitrogen'='Nitrogen weight (ug)')
+nitrogen_plant <- rename(nitrogen_plant, 'nonnative'='Total Nonnative PC')
+nitrogen_plant
 ```
 
 
 
 ```{r}
 #creating nitrate graph
-nitrate_graph <- ggplot(nitrogen_soil2, aes(x=Nitrate, y=nonnative, )) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()
+nitrate_graph <- ggplot(nitrogen_soil4, aes(x=Nitrate, y=nonnative)) +labs(title="Nitrate Concentration and Nonnative Percent Cover") +xlab("Nitrate (µg/g*dm)") +ylab("Nonnative Percent Cover (%)") +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()
 nitrate_graph
 
 #make column graph? x axis is zone, y axis is nitrogen concentration (nitrate and ammonium)
@@ -44,25 +50,273 @@ nitrate_graph
 
 ```{r}
 #creating ammonium graph
-ammonium_graph <- ggplot(nitrogen_soil2, aes(x=Ammonium, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=FALSE)
+ammonium_graph <- ggplot(nitrogen_soil4, aes(x=Ammonium, y=nonnative))  +labs(title="Ammonium Concentration and Nonnative Percent Cover") +xlab("Ammonium (µg/g*dm)") +ylab("Nonnative Percent Cover (%)") +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()
 ammonium_graph
 ```
 
 ```{r}
+A_N_graph <- ggplot(nitrogen_soil4, aes(x=A_N, y=nonnative))  +labs(title="Nitrate and Ammonium Concentration in Soil and Nonnative Percent Cover") +xlab("Nitrate + Ammonium (µg/g*dm)") +ylab("Nonnative Percent Cover (%)") +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + stat_regline_equation(label.x=15, label.y=30) + stat_regline_equation(aes(label = ..rr.label..),label.x=15, label.y=28)
+ # stat_cor(aes(label=..rr.label..), 
+A_N_graph
+```
+
+```{r}
+plant_graph <- ggplot(nitrogen_plant, aes(x=nitrogen, y=nonnative))  +labs(title="Nitrogen concentration in Plant Litter and Nonnative Percent Cover") +xlab("Nitrogen (µg N/ug)") +ylab("Nonnative Percent Cover (%)") +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic()+stat_regline_equation(label.x=0.005, label.y=30) + stat_cor(aes(label=..rr.label..), label.x=0.005, label.y=28)
+plant_graph
+```
+
+
+```{r}
+#Nitrate
+#normality of data (not manipulated)
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+fit_n <- lm(nonnative~Nitrate, data=nitrogen_soil4)
+res_n<- fit_n$residuals
+
+#run tests to test for normality
+hist(nitrogen_soil4$Nitrate)
+#qqPlot(nitrogen_soil4$Nitrate, main = "qqPlot of Nitrate concentration")
+shapiro.test(nitrogen_soil4$Nitrate)
+
+summary(fit_n)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+nitrate_aov <- aov(nonnative ~ Nitrate, data=nitrogen_soil4)
+summary(nitrate_aov)
+```
+
+```{r}
+#manipulate data#
+nitrogen_soil4$log_nitrate <- log(nitrogen_soil4$Nitrate)
+nitrogen_soil4$sq_nitrate <-sqrt(nitrogen_soil4$Nitrate)
+nitrogen_soil4
+
+#histogram with manipulated data
+hist(nitrogen_soil4$log_nitrate)
+hist(nitrogen_soil4$sq_nitrate)
+#log data seems most normal
+
+#run test for normality with manipulated data
+#qqPlot(nitrogen_soil4$log_nitrate, main = "qqPlot of log Nitrate concentration")
+shapiro.test(nitrogen_soil4$log_nitrate)
+
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+fit_n_log <- lm(nonnative~log_nitrate, data=nitrogen_soil4)
+res_n_log<- fit_n_log$residuals
+
+summary(fit_n_log)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+nitrate_aov_log <- aov(nonnative ~ log_nitrate, data=nitrogen_soil4)
+summary(nitrate_aov_log)
+```
+Running the two tests, data for Nitrate is not normally distributed
+Looking at summary of res for Nitrate, there is no significance between the two slopes: 0.61680 (H0)
+Anova test: 0.617, slope is not significant
+even wih transformed data, there is no significance between two slopes
+
+```{r}
+#Ammonium
+#normality of data (not manipulated)
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+#fit_a <- lm(nonnative~Ammonium, data=nitrogen_soil4)
+#res_a<- fit$residuals
+
+#run tests to test for normality
+hist(nitrogen_soil4$Ammonium)
+#qqPlot(nitrogen_soil4$Ammonium, main = "qqPlot of Ammonium concentration")
+shapiro.test(nitrogen_soil4$Ammonium)
+
+
+#summary(fit_a)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+ammonium_aov <- aov(nonnative ~ Ammonium, data=nitrogen_soil4)
+summary(ammonium_aov)
+```
+
+```{r}
+#manipulate data#
+nitrogen_soil4$log_ammonium <- log(nitrogen_soil4$Ammonium)
+nitrogen_soil4$sq_ammonium <-sqrt(nitrogen_soil4$Ammonium)
+nitrogen_soil4
+
+#histogram with manipulated data
+hist(nitrogen_soil4$log_ammonium)
+hist(nitrogen_soil4$sq_ammonium)
+#log data seems most normal
+
+#run test for normality with manipulated data
+#qqPlot(nitrogen_soil4$log_ammonium, main = "qqPlot of log Ammonium concentration")
+shapiro.test(nitrogen_soil4$log_ammonium)
+
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+fit_a_log <- lm(nonnative~log_ammonium, data=nitrogen_soil4)
+res_a_log<- fit_a_log$residuals
+
+summary(fit_a_log)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+ammonium_aov_log <- aov(nonnative ~ log_ammonium, data=nitrogen_soil4)
+summary(ammonium_aov_log)
+```
+No significance between the slopes. 0.9060 (H0)
+
+```{r}
+#Nitrate plus Ammonium
+#normality of data (not manipulated)
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+#fit_a_n <- lm(nonnative~A_N, data=nitrogen_soil4)
+#res_a_n<- fit$residuals
+
+#run tests to test for normality
+hist(nitrogen_soil4$A_N)
+#qqPlot(nitrogen_soil4$A_N, main = "qqPlot of Nitrate plus Ammonium concentration")
+shapiro.test(nitrogen_soil4$A_N)
+
+#nitrate
+#summary(fit_a_n)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+a_n_aov <- aov(nonnative ~ A_N, data=nitrogen_soil4)
+summary(a_n_aov)
+
+```
+No significance between the slopes: 0.7104 (H0)
+
+```{r}
+#manipulate data#
+nitrogen_soil4$log_a_n <- log(nitrogen_soil4$A_N)
+nitrogen_soil4$sq_a_n <-sqrt(nitrogen_soil4$A_N)
+nitrogen_soil4
+
+#histogram with manipulated data
+hist(nitrogen_soil4$log_a_n)
+hist(nitrogen_soil4$sq_a_n)
+#log data seems most normal
+
+#run test for normality with manipulated data
+#qqPlot(nitrogen_soil4$log_a_n, main = "qqPlot of log Ammonium concentration")
+shapiro.test(nitrogen_soil4$log_a_n)
+
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+#fit_a_n_log <- lm(nonnative~log_a_n, data=nitrogen_soil4)
+#res_a_n_log<- fit_a_n_log$residuals
+
+#summary(fit_a_n_log)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+a_n_aov_log <- aov(nonnative ~ log_a_n, data=nitrogen_soil4)
+summary(a_n_aov_log)
+
+```
+
+
+```{r}
+#nitrogen in plants
+#normality of data (not manipulated)
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+#fit_plant_n <- lm(nonnative~nitrogen, data=nitrogen_plant)
+#res_plant_n<- fit$residuals
+
+#run tests to test for normality
+hist(nitrogen_plant$nitrogen)
+#qqPlot(nitrogen_plant$nitrogen, main = "qqPlot of Nitrogen in Plant Matter")
+shapiro.test(nitrogen_plant$nitrogen)
+
+#nitrate
+#summary(fit_plant_n)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+plant_n_aov <- aov(nonnative ~ nitrogen, data=nitrogen_plant)
+summary(plant_n_aov)
+
+```
+```{r}
+#manipulate data#
+nitrogen_plant$log_nitrogen <- log(nitrogen_plant$nitrogen)
+nitrogen_plant$sq_nitrogen <-sqrt(nitrogen_plant$nitrogen)
+nitrogen_plant
+
+#histogram with manipulated data
+hist(nitrogen_plant$log_nitrogen)
+hist(nitrogen_plant$sq_nitrogen)
+#sq data seems most normal
+
+#run test for normality with manipulated data
+#qqPlot(nitrogen_plant$sq_nitrogen, main = "qqPlot of sq nitrogen concentration")
+shapiro.test(nitrogen_plant$sq_nitrogen)
+
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+#find residuals
+#fit_plant_sq <- lm(nonnative~sq_nitrogen, data=nitrogen_plant)
+#res_plant_sq<- fit_a_log$residuals
+
+#summary(fit_plant_sq)
+
+#anova
+#H0:𝜇d (normality of data) = 0
+#HA:𝜇d (normality of data) ≠ 0
+plant_aov_log <- aov(nonnative ~ sq_nitrogen, data=nitrogen_plant)
+summary(plant_aov_log)
+```
+data is normally dstributed from qqplot. 
+
+
+```{r}
+#manipulating data for Nitrate (log and squared)
+#nitrogen_soil4$log_nitrate <- log(nitrogen_soil4$Nitrate)
+#nitrogen_soil4$sq_nitrate <-sqrtnitrogen_soil4$Nitrate)
+#
+```
+
+```{r}
+#not needed anymore
 #Nitrate graph with separate zones
-nitrate_graph2 <- ggplot(nitrogen_soil3, aes(x=Nitrate, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + facet_wrap(~Zone)
-nitrate_graph2
+#nitrate_graph2 <- ggplot(nitrogen_soil3, aes(x=Nitrate, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + facet_wrap(~Zone)
+#nitrate_graph2
 
 ```
 
 ``` {r}
+#not needed anymore
 #ammonium graph with separate zones
-ammonium_graph2 <- ggplot(nitrogen_soil3, aes(x=Ammonium, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + facet_wrap(~Zone)
-ammonium_graph2
+#ammonium_graph2 <- ggplot(nitrogen_soil3, aes(x=Ammonium, y=nonnative)) +geom_point() +geom_smooth(method=lm , color="red", se=TRUE) + theme_classic() + facet_wrap(~Zone)
+#ammonium_graph2
 
 ```
 
 ```{r}
-plot(x=nitrogen_soil2$Nitrate, y=nitrogen_soil2$nonnative, ,xlab="Nitrate concentration", yxlab="Total Nonnative PC", main="Nitrate and Nonnative PC")
+#not needed anymore
+#plot(x=nitrogen_soil2$Nitrate, y=nitrogen_soil2$nonnative, ,xlab="Nitrate concentration", yxlab="Total Nonnative PC", main="Nitrate and Nonnative PC")
 
 ```
