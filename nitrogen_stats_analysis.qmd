@@ -1,0 +1,39 @@
+---
+title: "Nitrogen_analysis_Final"
+author: Patty Park
+format: html
+editor: visual
+---
+
+Nutrients are the essential bases for plant to be able to grow. Nitrogen, phosphorus, and potassium are a few of the necessary nutrients that plants need in order to survive. The issue is when too much of these nutrients are inputted into the environment. This threatens the ecosystem such as trophic levels, increase of invasive species, and increase disease [^1]. One particular ecosystem, vernal pools are more sensitive to these changes. Vernal pools are seasonal wetlands, meaning they are full of water during the winter season and are empty and dry during the summer season. About 90% of wetlands have been lost from urban planning and the expansion of infrastructure in these location.
+
+One of the issues with urban expansion is the changes in natural drainage in locations that include vernal pools in these areas. Runoff may be increasing or decreasing the amount of water that end up in these pools. One other concern is that vernal pools that are close to urban location may have an increase concentration of nutrients. One of the reasoning is that it is collecting the nutrients from nearby yards with a constant application of an influx of nutrients.
+
+Before, I had done a small project concerning the nitrogen concentration found in plant and soil matter. My hypothesis looked at vernal pool's proximity to urban spaces and the amount of nitrate as well as ammonium concentrations in these pools and how that affected the amount of nonnative plant percent cover in these areas. I had theorized that the vernal pools that were close or even had a direct pipe of runoff into these pools had an increase amount of nitrate and ammonium concentrations in it. These were the relationships as well as the hypothesis that I came up with:
+ - Overall, the relationship between nonnative percent cover and nutrients were as followed:
+ 
+$$\text{Nonnative Percent Cover} = \beta_0 + \beta_1 \text{nutrients} + \epsilon$$
+
+- To refine this equation to my project's goals, I rearranged the equation to include nitrate and ammonium concentration depending on if they came from plant matter or soil matter:
+$$\text{Nonnative Percent Cover} = \beta_0 + \beta_1 \text{nitrate and ammonium conc. soil} + \beta_2 \text{nitrogen conc. plant} + \epsilon$$
+
+- My hypothesis testing included the general syntax that I used when statistically analyzing my data: (ask for help: that I did this instead by looking at the normallity of my data. is it possible to do this with non native species impacted by runoff or no runoff?)
+$$H_{0}: \mu_{nonsmoker} - \mu_{smoker} = 0$$
+$$H_{A}: \mu_{nonsmoker} - \mu_{smoker} \neq 0$$
+
+
+
+
+In this project, I was not able to find a definitive relation
+
+However, for this blog, I am going to take a step back and see if there are any interesting trends in my data. For this analysis, I am going to look if there is a relationship between the location of where the samples were located and if that impacts the amount of nitrogen concentration at those areas.
+
+
+look into doing simple spatial statistics in analysis
+
+
+
+
+
+[^1] Kneitel, J. M., & Lessin, C. L. (2010). Ecosystem-phase interactions: Aquatic eutrophication decreases terrestrial plant diversity in California vernal pools. Oecologia, 163(2), 461–469. https://doi.org/10.1007/s00442-009-1529-0
+
