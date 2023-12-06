@@ -25,7 +25,10 @@ $$H_{A}: \mu_{Nonnative plant cover} - \mu_{Native plant cover} \neq 0$$
 
 In this project, I was not able to find a definitive relationship between the nitrogen concentration and nonnative plant cover in my original analysis.
 
-However, for this blog, I am going to take a step back and see if there are any interesting trends inside my data. For this analysis, I am going to look if there is a relationship between the location of where the samples were located and if that impacts the amount of nitrogen concentration at those areas.
+However, for this blog, I am going to take a step back and see if there are any interesting trends inside my data. For this analysis, I am going to look if there is a relationship between the location of where the samples were located and if that impacts the amount of nitrogen concentration at those areas. This blog will cover these analysis that I will cover:
+-   regression line aka relationship between the two
+-   hypothesis testing
+-   spacial stats
 
 As mentioned above, vernal pools are a sensitive ecosystem. Unfortunately, as there are only such few number left from its original amount, limited research has been done on these ecosystems. Few research papers have been published that cover the nutrient concentration in vernal pools and instead cover wetlands as a whole. One paper, "Litter breakdown among intermittently connected and unconnected geographically isolated Wetlands: how nutrient inputs alter wetland function"[^2] talks about the impact increased nutrients can have on the breakdown on litter. This brings up a certain questions: does litter decomposition happen at a more rapid pace depending on if the litter is at the edge of the pool or at the center of the pool?
 
@@ -72,6 +75,7 @@ nitrogen_plant <- read_csv("data/Nitrogen_plant (5).csv")
 My end goal is to get two different datasets: one with soil nutrient concentration and one with plant nutrient concentration. Both datasets will have geolocations included.
 
 ```{r}
+#join soil dataset and north parcel dataset together
 #tidy up north_parcel dataset to have information that is relevent
 north_parcel_clean <- north_parcel %>% 
   select(`ObjectID`, 
@@ -94,14 +98,103 @@ nitrogen_soil_clean <- nitrogen_soil %>%
          Zone = ifelse(Zone == "T", "transition", Zone),
          Zone = ifelse(Zone == "M", "bottom", Zone)) %>% 
   select(-ObjectID)
+#  rename(nitrate_ug = `Nitrate (ug/g*dm)`)
 
 
 #join north_parcel_clean with soil dataset
 soil_north_join <- inner_join(nitrogen_soil_clean, north_parcel_clean, by = c('Pool', 'Zone', 'Distance'))
 
-
+#check to see if each value is unique
 !duplicated(soil_north_join$ObjectID)
 ```
+
+```{r}
+#join nitrogen plant and north parcel dataset together
+#tidy up nitrogen_soil dataset
+nitrogen_plant_clean <- nitrogen_plant %>% 
+  mutate(Zone = ifelse(Zone == "E", "edge", Zone),
+         Zone = ifelse(Zone == "T", "transition", Zone),
+         Zone = ifelse(Zone == "M", "bottom", Zone)) %>% 
+  rename(nitrogen_ug = nitrogen)
+
+#rename incorrect item names to correct name in nitrogen_plant dataset
+nitrogen_plant_clean$Pool[32:36] <- "PH1"
+
+#join north_parcel_clean with soil dataset
+plant_north_join <- inner_join(nitrogen_plant_clean, north_parcel_clean, by = c('Pool', 'Zone', 'Distance'))
+
+#check to see if each value is unique
+!duplicated(plant_north_join$ObjectID)
+```
+
+Let's go ahead and do some visualization on our data
+
+```{r}
+#for soil graph
+ggplot(data = soil_north_join, aes(y = Zone, x = `Nitrate (ug/g*dm)`)) +
+  geom_jitter() +
+  labs(y = "Zone",
+       x = "Nitrate (ug/g*dm)",
+       title = "Soil graph") + 
+  theme_classic() 
+
+
+
+#for plant graph
+ggplot(data = plant_north_join, aes(y = Zone, x = nitrogen_ug)) +
+  geom_jitter() +
+  labs(y = "Zone",
+       x = "Nitrogen (ug)",
+       title = "Plant graph")+ theme_classic()
+
+```
+
+
+Before running a linear regression, let's see what we get for our correlation coefficient to compare with what we have in the graphs above:
+
+```{r}
+#find correlation coefficient for soil (USELESS)
+soil_north_join %>% 
+  summarize(nitrate_distance_cor = cor(`Nitrate (ug/g*dm)`, Zone))
+```
+
+```{r}
+#find correlation coefficient for (USELESS)
+plant_north_join %>% 
+  summarize(nitrogen_distance_cor = cor(nitrogen_ug, Distance))
+```
+
+From the correlation coefficient, we see that there is a small correlation between distance and nitrogen concentration. (USELESS)
+
+
+
+
+Let's go ahead and run a linear regression with nitrogen concentration depending on location to see if there is any type of correlation. (MAYBE not possible to run a linear regression)
+
+
+Now we will shift to do hypothesis testing:
+As mentioned above, my hypothesis that I will test is as followed:
+
+CHANGE SO THAT ALL MEANS ARE EQUAL TO EACH OTHER
+$$H_{0}: \mu_{Edge conc.} - \mu_{Transition conc.} - \mu_{Middle conc.} = 0$$
+
+CHANGE SO THAT 
+$$H_{0}: \mu_{Edge conc.} - \mu_{Transition conc.} - \mu_{Middle conc.} \neq 0$$
+
+```{r}
+#soil anova
+nitrogen_soil_aov <- aov(`Nitrate (ug/g*dm)` ~ Zone, data = soil_north_join)
+summary(nitrogen_soil_aov)
+
+#plant anova
+nitrogen_plant_aov <- aov(`nitrogen_ug` ~ Zone, data = plant_north_join)
+summary(nitrogen_plant_aov)
+```
+
+From these results, I get a very big p-value. I can conclude that there isn't any big significance in my data and that location in the pool does not determine how much nitrogen concentration are in certain parts of the pool.
+
+
+## 
 
 
 

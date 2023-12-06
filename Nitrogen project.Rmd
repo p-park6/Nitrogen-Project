@@ -16,7 +16,7 @@ library(ggpubr)
 
 ```{r}
 #importing data into R
-nitrogen_soil <- read_csv("data/nitrogen_soil.csv")
+nitrogen_soil <- read_csv("nitrogen_soil.csv")
 north_parcel <- read_csv("data/np_pc.csv")
 north_parcel
 nitrogen_soil2 <- rename(nitrogen_soil, 'nonnative' = 'Total Nonnative PC')
