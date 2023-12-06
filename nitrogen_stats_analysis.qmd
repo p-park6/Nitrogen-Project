@@ -84,20 +84,25 @@ north_parcel_clean <- north_parcel %>%
          Zone = `Vernal Pool Zone`,
          Distance = `Transect Distance of Quadrat`)
 
+#replace the NA value with edge to complete the dataframe
+north_parcel_clean$Zone[43] <- "edge"
+
 
 #tidy up nitrogen_soil dataset
-nitrogen_soil_clean <- nitrogen_plant %>% 
+nitrogen_soil_clean <- nitrogen_soil %>% 
   mutate(Zone = ifelse(Zone == "E", "edge", Zone),
          Zone = ifelse(Zone == "T", "transition", Zone),
-         Zone = ifelse(Zone == "M", "bottom", Zone))
+         Zone = ifelse(Zone == "M", "bottom", Zone)) %>% 
+  select(-ObjectID)
 
 
 #join north_parcel_clean with soil dataset
-soil_north_join <- right_join(nitrogen_soil_clean, north_parcel_clean, by = c('Pool', 'Zone', 'Distance'))
+soil_north_join <- inner_join(nitrogen_soil_clean, north_parcel_clean, by = c('Pool', 'Zone', 'Distance'))
+
+
 !duplicated(soil_north_join$ObjectID)
 ```
 
-test
 
 
 
